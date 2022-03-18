@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
+import countryList from 'react-select-country-list';
 import { useDispatch, useSelector } from 'react-redux';
 import { getHolidayData } from './store/actionCreater';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const localizer = momentLocalizer(moment);
 
@@ -13,9 +14,14 @@ function App() {
   const holidays = useSelector((state) => state.calendar.holidays);
   const [holidayList, setHolidayList] = useState([]);
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
+  const [country, setCountry] = useState('PK');
   useEffect(() => {
     dispatch(
-      getHolidayData(new Date().getMonth() + 1, 'US', new Date().getFullYear())
+      getHolidayData(
+        new Date().getMonth() + 1,
+        country,
+        new Date().getFullYear()
+      )
     );
   }, []);
 
@@ -35,8 +41,31 @@ function App() {
       setHolidayList(temp);
     }
   }, [holidays]);
+
   return (
     <div className='App'>
+      <label>Select Country</label>
+      <select
+        value={country}
+        onChange={(e) => {
+          setCountry(e.target.value);
+          dispatch(
+            getHolidayData(
+              currentMonth,
+              e.target.value,
+              new Date().getFullYear()
+            )
+          );
+        }}
+      >
+        {countryList()
+          .getData()
+          .map((country) => (
+            <option key={country.label} value={country.value}>
+              {country.value}
+            </option>
+          ))}
+      </select>
       <Calendar
         localizer={localizer}
         events={holidayList}
